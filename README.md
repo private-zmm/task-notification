@@ -15,7 +15,7 @@
 
 ```bash
 # 克隆仓库
-git clone <repository-url>
+git clone https://github.com/private-zmm/task-notification.git
 cd task-notification
 
 # 安装依赖
