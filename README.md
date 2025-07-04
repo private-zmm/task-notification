@@ -22,21 +22,6 @@ cd task-notification
 pnpm install
 ```
 
-## 配置
-
-你需要配置邮件服务器信息。你可以通过Web界面配置，或者手动创建`.env`文件：
-
-```
-# 邮箱配置
-EMAIL_HOST=smtp.example.com
-EMAIL_PORT=587
-EMAIL_USER=your-email@example.com
-EMAIL_PASS=your-password-or-app-password
-
-# 默认端口
-PORT=3000
-```
-
 ## 使用方法
 
 ```bash
@@ -47,7 +32,7 @@ pnpm start
 pnpm dev
 ```
 
-启动后，打开浏览器访问 `http://localhost:3000` 进入Web管理界面。
+启动后，打开浏览器访问 `http://localhost:8002` 进入Web管理界面。
 
 ## 使用说明
 
