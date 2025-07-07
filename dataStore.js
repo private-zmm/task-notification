@@ -39,14 +39,49 @@ const DEFAULT_CONFIG = {
  * 加载配置
  */
 async function loadConfig() {
-  await ensureDataDir();
-  
   try {
+    // 确保data目录存在
+    await ensureDataDir();
+
+    // 读取配置文件
     const data = await fs.readFile(CONFIG_FILE, 'utf8');
-    return JSON.parse(data);
+    const config = JSON.parse(data);
+
+    // 确保所有必需的配置字段都存在
+    if (!config.tasks) {
+      config.tasks = [];
+    }
+    
+    if (!config.smtp) {
+      config.smtp = {
+        host: '',
+        port: 587,
+        secure: false,
+        auth: {
+          user: '',
+          pass: ''
+        },
+        from: ''
+      };
+    }
+
+    return config;
   } catch (error) {
-    // 如果文件不存在或解析错误，返回默认配置
-    return DEFAULT_CONFIG;
+    // 如果配置文件不存在或有错误，返回默认配置
+    console.warn('加载配置失败，使用默认配置:', error.message);
+    return {
+      tasks: [],
+      smtp: {
+        host: '',
+        port: 587,
+        secure: false,
+        auth: {
+          user: '',
+          pass: ''
+        },
+        from: ''
+      }
+    };
   }
 }
 

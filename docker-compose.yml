@@ -3,7 +3,7 @@ version: '3'
 services:
   app:
     build: .
-    image: junweizhou/task-notification:1.0.0
+    image: junweizhou/task-notification:1.0.1
     container_name: task-notification
     restart: unless-stopped
     ports:
@@ -12,6 +12,8 @@ services:
       - task-notification-data:/usr/src/app/data
     environment:
       - NODE_ENV=production
+      - TZ=Asia/Shanghai  # 设置容器时区为北京时间
+      # 可以添加其他环境变量，例如邮箱配置
 
 volumes:
   task-notification-data: 

@@ -26,6 +26,10 @@ app.use(session({
 // 活跃的任务计划
 const activeTasks = new Map();
 
+// 设置时区为北京时间
+process.env.TZ = 'Asia/Shanghai';
+console.log(`当前系统时区设置为北京时间，当前时间：${new Date().toLocaleString()}`);
+
 // 启动任务
 async function startTask(task) {
   if (activeTasks.has(task.id)) {

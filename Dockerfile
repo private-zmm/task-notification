@@ -1,14 +1,31 @@
 FROM node:20.19.2
 
+# 设置时区为北京时间 (Asia/Shanghai)
+ENV TZ=Asia/Shanghai
+RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
+
+# 全局安装pnpm
+RUN npm install -g pnpm
+
+# 创建npm到pnpm的映射，使npm命令使用pnpm执行
+RUN corepack enable && \
+    corepack prepare pnpm@latest --activate
+
 # 创建应用目录
 WORKDIR /usr/src/app
 
-# 复制package.json和package-lock.json
-COPY package.json ./
-COPY pnpm-lock.yaml ./
+# 复制package.json
+COPY package*.json ./
 
-# 安装依赖
-RUN pnpm install
+# 如果存在pnpm-lock.yaml则复制
+COPY pnpm-lock.yaml* ./
+
+# 设置pnpm配置
+RUN pnpm config set auto-install-peers true
+RUN pnpm config set strict-peer-dependencies false
+
+# 使用pnpm安装依赖
+RUN pnpm install --frozen-lockfile || pnpm install
 
 # 复制应用代码
 COPY . .
