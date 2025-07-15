@@ -1,5 +1,6 @@
 const express = require('express');
 const session = require('express-session');
+const FileStore = require('session-file-store')(session);
 const bodyParser = require('body-parser');
 const path = require('path');
 const cron = require('node-cron');
@@ -18,9 +19,17 @@ app.use(express.static(path.join(__dirname, 'public')));
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 app.use(session({
+  store: new FileStore({
+    path: './sessions',
+    ttl: 86400, // 1天过期时间
+    retries: 0
+  }),
   secret: 'task-notification-secret',
   resave: false,
-  saveUninitialized: true
+  saveUninitialized: false,
+  cookie: {
+    maxAge: 86400000 // 1天
+  }
 }));
 
 // 活跃的任务计划
