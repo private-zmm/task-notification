@@ -4,8 +4,26 @@ const FileStore = require('session-file-store')(session);
 const bodyParser = require('body-parser');
 const path = require('path');
 const cron = require('node-cron');
+const fs = require('fs').promises;
 const { sendNotification } = require('./emailService');
 const { loadConfig, saveConfig } = require('./dataStore');
+
+// 确保数据目录存在
+async function ensureDirectories() {
+  const directories = [
+    path.join(__dirname, 'data'),
+    path.join(__dirname, 'sessions')
+  ];
+  
+  for (const dir of directories) {
+    try {
+      await fs.access(dir);
+    } catch (error) {
+      console.log(`创建目录: ${dir}`);
+      await fs.mkdir(dir, { recursive: true });
+    }
+  }
+}
 
 const app = express();
 const PORT = process.env.PORT || 8002;
@@ -84,19 +102,44 @@ function stopTask(taskId) {
 
 // 加载并启动所有启用的任务
 async function initTasks() {
-  const config = await loadConfig();
-  
-  // 设置邮件服务配置
-  process.env.EMAIL_HOST = config.email.host;
-  process.env.EMAIL_PORT = config.email.port;
-  process.env.EMAIL_USER = config.email.user;
-  process.env.EMAIL_PASS = config.email.pass;
-  
-  // 启动所有已启用的任务
-  for (const task of config.tasks) {
-    if (task.enabled) {
-      await startTask(task);
+  try {
+    const config = await loadConfig();
+    
+    // 确保config.email存在
+    if (!config.email) {
+      config.email = {
+        host: '',
+        port: 587,
+        user: '',
+        pass: ''
+      };
     }
+    
+    // 设置邮件服务配置
+    process.env.EMAIL_HOST = config.email.host || '';
+    process.env.EMAIL_PORT = config.email.port || '587';
+    process.env.EMAIL_USER = config.email.user || '';
+    process.env.EMAIL_PASS = config.email.pass || '';
+    
+    // 确保tasks存在
+    if (!Array.isArray(config.tasks)) {
+      config.tasks = [];
+    }
+    
+    // 启动所有已启用的任务
+    for (const task of config.tasks) {
+      if (task && task.enabled) {
+        await startTask(task);
+      }
+    }
+    
+    // 如果是新配置，保存一份默认配置到文件
+    if (!config.email.host) {
+      await saveConfig(config);
+      console.log('已创建默认配置文件');
+    }
+  } catch (error) {
+    console.error('初始化任务失败:', error);
   }
 }
 
@@ -300,6 +343,7 @@ app.post('/api/config/import', async (req, res) => {
 // 启动服务器
 app.listen(PORT, async () => {
   console.log(`服务器已启动: http://localhost:${PORT}`);
+  await ensureDirectories();
   await initTasks();
 });
 

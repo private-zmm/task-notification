@@ -52,36 +52,15 @@ async function loadConfig() {
       config.tasks = [];
     }
     
-    if (!config.smtp) {
-      config.smtp = {
-        host: '',
-        port: 587,
-        secure: false,
-        auth: {
-          user: '',
-          pass: ''
-        },
-        from: ''
-      };
+    if (!config.email) {
+      config.email = DEFAULT_CONFIG.email;
     }
 
     return config;
   } catch (error) {
     // 如果配置文件不存在或有错误，返回默认配置
     console.warn('加载配置失败，使用默认配置:', error.message);
-    return {
-      tasks: [],
-      smtp: {
-        host: '',
-        port: 587,
-        secure: false,
-        auth: {
-          user: '',
-          pass: ''
-        },
-        from: ''
-      }
-    };
+    return DEFAULT_CONFIG;
   }
 }
 

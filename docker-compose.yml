@@ -3,7 +3,7 @@ version: '3'
 services:
   app:
     build: .
-    image: junweizhou/task-notification:1.0.2
+    image: junweizhou/task-notification:1.0.3
     container_name: task-notification
     restart: unless-stopped
     ports:
