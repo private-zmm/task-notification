@@ -88,12 +88,18 @@ async function startTask(task) {
   return true;
 }
 
-// 停止任务
+// 停止任务 - 改进版本
 function stopTask(taskId) {
   const job = activeTasks.get(taskId);
   if (job) {
-    job.stop();
-    activeTasks.delete(taskId);
+    try {
+      job.stop();
+      job.destroy(); // 确保完全销毁
+    } catch (error) {
+      console.error(`停止任务 ${taskId} 时出错:`, error);
+    } finally {
+      activeTasks.delete(taskId);
+    }
     console.log(`任务 ID:${taskId} 已停止`);
     return true;
   }
@@ -351,4 +357,33 @@ app.listen(PORT, async () => {
 process.on('SIGINT', () => {
   console.log('服务器已停止');
   process.exit(0);
-}); 
+});
+
+// 添加进程监控
+process.on('uncaughtException', (error) => {
+  console.error('未捕获的异常:', error);
+  // 优雅关闭
+  gracefulShutdown();
+});
+
+process.on('unhandledRejection', (reason, promise) => {
+  console.error('未处理的 Promise 拒绝:', reason);
+});
+
+// 优雅关闭函数
+function gracefulShutdown() {
+  console.log('开始优雅关闭...');
+  
+  // 停止所有定时任务
+  for (const [taskId, job] of activeTasks.entries()) {
+    try {
+      job.stop();
+      job.destroy();
+    } catch (error) {
+      console.error(`关闭任务 ${taskId} 失败:`, error);
+    }
+  }
+  activeTasks.clear();
+  
+  process.exit(0);
+}

@@ -1,5 +1,8 @@
 FROM node:20.19.2
 
+# 设置 Node.js 内存限制
+ENV NODE_OPTIONS="--max-old-space-size=512"
+
 # 设置时区为北京时间 (Asia/Shanghai)
 ENV TZ=Asia/Shanghai
 RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
@@ -35,6 +38,10 @@ RUN mkdir -p data && chmod 777 data
 
 # 暴露端口
 EXPOSE 8002
+
+# 添加健康检查
+HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
+  CMD curl -f http://localhost:8002/ || exit 1
 
 # 运行应用
 CMD [ "node", "server.js" ] 

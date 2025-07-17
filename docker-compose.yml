@@ -3,7 +3,7 @@ version: '3'
 services:
   app:
     build: .
-    image: junweizhou/task-notification:1.0.3
+    image: junweizhou/task-notification:1.0.4
     container_name: task-notification
     restart: unless-stopped
     ports:
@@ -12,8 +12,15 @@ services:
       - task-notification-data:/usr/src/app/data
     environment:
       - NODE_ENV=production
-      - TZ=Asia/Shanghai  # 设置容器时区为北京时间
-      # 可以添加其他环境变量，例如邮箱配置
+      - TZ=Asia/Shanghai
+      - NODE_OPTIONS=--max-old-space-size=512
+    # 添加资源限制
+    deploy:
+      resources:
+        limits:
+          memory: 1G
+        reservations:
+          memory: 256M
 
 volumes:
   task-notification-data: 
